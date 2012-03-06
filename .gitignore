@@ -5,3 +5,5 @@
 .idea
 pip-log.txt*
 *.swn
+/dist/
+/django_pybrowscap.egg-info/
