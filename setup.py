@@ -18,7 +18,7 @@ def read(fname):
 setup(
     name='django-pybrowscap',
     version=django_pybrowscap.__version__,
-    description='django-pybrowscap is django middleware with support for pybrowscap.',
+    description='django-pybrowscap is django middleware with support for pybrowscap',
     long_description=read('README.rst'),
     author=u'Vladimír Gorej',
     author_email='gorej@codescale.net',

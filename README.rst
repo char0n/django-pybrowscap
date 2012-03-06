@@ -40,6 +40,7 @@ Download latest version of browscap.csv file from http://browsers.garykeith.com/
      'django_pybrowscap'
  )
 
+
 **Put django_pybrowscap.middleware.PybrowscapMiddleware into MIDDLEWARE_CLASSES in your projects settings.py file**
 
 ::
@@ -111,10 +112,11 @@ To run the test run command: ::
  $ python manage.py test django_pybrowscap
 
 
+
 Author
 ------
 
-| char0n (Vladimír Gorej, CodeScale s.r.o.)
+| char0n (Vladimir Gorej, CodeScale s.r.o.)
 | email: gorej@codescale.net
 | web: http://www.codescale.net
 
