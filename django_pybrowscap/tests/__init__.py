@@ -1,0 +1,1 @@
+from django_pybrowscap.tests.test_middleware import *
