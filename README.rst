@@ -15,7 +15,7 @@ Requirements
 
 
 Installation
------------
+------------
 
 Install via pipy or copy this module into your project or into your PYTHON_PATH.
 Download latest version of browscap.csv file from http://browsers.garykeith.com/downloads.asp.
