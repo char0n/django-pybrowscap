@@ -12,14 +12,14 @@ class RequestMock(object):
 
     def __init__(self):
         self.path_info = '/'
-        self.META = {'HTTP_USER_AGENT': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:10.0.2) Gecko/20100101 Firefox/10.0.2'}
+        self.META = {'HTTP_USER_AGENT': 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.18) Gecko/20110628 Ubuntu/10.10 (maverick) Firefox/3.6.18'}
 
 
 class BaseTest(unittest.TestCase):
 
     def setUp(self):
 
-        middleware.settings.PYBROWSCAP_FILE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'browscap_07_10_2011.csv')
+        middleware.settings.PYBROWSCAP_FILE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'browscap_22_06_2011.csv')
         self.request = RequestMock()
         self.DEFAULT_PYBROWSCAP_INITIALIZE = middleware.settings.PYBROWSCAP_INITIALIZE
         self.DEFAULT_PYBROWSCAP_FILE_PATH = middleware.settings.PYBROWSCAP_FILE_PATH
@@ -114,12 +114,6 @@ class TestIgnorePaths(BaseTest):
 
 
 class TestRequestErrors(BaseTest):
-
-    def test_no_path_info(self):
-        del self.request.path_info
-        instance = middleware.PybrowscapMiddleware()
-        instance.process_request(self.request)
-        self.assertFalse(hasattr(self.request, 'browser'))
 
     def test_no_meta(self):
         del self.request.META

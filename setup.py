@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 import django_pybrowscap
 
@@ -26,7 +26,11 @@ setup(
     download_url='http://github.com/char0n/django-pybrowscap/tarball/master',
     license='BSD',
     keywords = 'browser browscap detection user agent django',
-    packages=['django_pybrowscap', 'django_pybrowscap.tests'],
+    packages=find_packages('.'),
+    package_data = {
+        # If any package contains *.csv files, include them:
+        'django_pybrowscap.tests': ['data/*.csv']
+    },
     install_requires=['django', 'pybrowscap'],
     platforms='any',
     classifiers=[
