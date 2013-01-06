@@ -124,7 +124,7 @@ Author
 References
 ----------
 
-- http://github.com/char0n/django-pybrowscap
+- http://github.com/CodeScaleInc/django-pybrowscap
 - http://browsers.garykeith.com/
 - http://php.net/get_browser
 - http://www.codescale.net/en/community#django-pybrowscap
