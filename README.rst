@@ -56,7 +56,7 @@ Install via pipy or copy this module into your project or into your PYTHON_PATH.
 Configuration
 -------------
 
-**Download **
+**django settings.py constants **
 
 ::
 
@@ -66,16 +66,16 @@ Configuration
  # Path where browscap file is located on filesystem
  PYBROWSCAP_FILE_PATH = MEDIA_ROOT+os.sep+'browscap.csv' # Default is '' (empty string)
 
-# Proxy to use
-# See: http://docs.python-requests.org/en/latest/user/advanced/#proxies
-PYBROWSCAP_PROXIES = {
-  "http": "http://user:pass@10.10.1.10:3128",
-  "https": "http://10.10.1.10:1080",
-} # Defaults to None.
+ # Proxy to use
+ # See: http://docs.python-requests.org/en/latest/user/advanced/#proxies
+ PYBROWSCAP_PROXIES = {
+   "http": "http://user:pass@10.10.1.10:3128",
+   "https": "http://10.10.1.10:1080",
+ } # Defaults to None.
 
-# Timeout for HTTP requets
-# See: http://docs.python-requests.org/en/latest/user/quickstart/#timeouts
-PYBROWSCAP_HTTP_TIMEOUT = 30
+ # Timeout for HTTP requets
+ # See: http://docs.python-requests.org/en/latest/user/quickstart/#timeouts
+ PYBROWSCAP_HTTP_TIMEOUT = 30
 
  # Tuple of regular expressions of paths that are to be ignored by the middleware
  PYBROWSCAP_IGNORE_PATHS = (
@@ -93,7 +93,7 @@ Download latest version of browscap.csv by executing the builtin management comm
 
 ::
 
-python manage.py download_browscap_csv
+ python manage.py download_browscap_csv
 
 
 Example
