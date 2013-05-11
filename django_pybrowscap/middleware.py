@@ -49,18 +49,3 @@ class PybrowscapMiddleware(object):
             finally:
                 if not hasattr(request, 'browser'):
                     request.browser = None
-
-            if settings.PYBROWSCAP_UPDATE:
-                try:
-                    last_reloaded = self.browscap.reloaded_at or self.browscap.loaded_at
-                    if (datetime.now() - last_reloaded).total_seconds() > settings.PYBROWSCAP_UPDATE_INTERVAL:
-                        try:
-                            log.info('Reloading pybrowscap with new data')
-                            Downloader(URL).get(settings.PYBROWSCAP_FILE_PATH)
-                            self.browscap.reload(settings.PYBROWSCAP_FILE_PATH)
-                        except (ValueError, urllib2.HTTPError, urllib2.URLError, IOError):
-                            log.exception('Error while reloading pybrowscap')
-                        else:
-                            log.info('Pybrowscap successfully reloaded')
-                except AttributeError:
-                    log.warn('Error while reloading uninitialized pybrowscap')
