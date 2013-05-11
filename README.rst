@@ -56,7 +56,7 @@ Install via pipy or copy this module into your project or into your PYTHON_PATH.
 Configuration
 -------------
 
-**django settings.py constants **
+**django settings.py constants**
 
 ::
 
