@@ -32,6 +32,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        self.proxies = settings.PYBROWSCAP_PROXIES
+        self.timeout = settings.PYBROWSCAP_HTTP_TIMEOUT
         self.url = URL
         file_path = settings.PYBROWSCAP_FILE_PATH
         stream = False
@@ -63,7 +65,8 @@ class Command(BaseCommand):
     def _get_response(self, stream=False):
         log.info("Downloading from %s" % self.url)
         try:
-            response = requests.get(self.url, stream=stream)
+            response = requests.get(self.url, stream=stream,
+                                    proxies=self.proxies, timeout=self.timeout)
             try:
                 status = response.raise_for_status()
             except:
