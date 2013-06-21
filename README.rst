@@ -94,7 +94,9 @@ Download latest version of browscap.csv by executing the builtin management comm
 
 ::
 
- python manage.py download_browscap_csv
+ python manage.py download_browscap \
+ --url http://tempdownloads.browserscap.com/stream.asp?Full_BrowscapINI \
+ --file-path /path/to/downloaded/browscap_file
 
 
 Example
