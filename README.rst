@@ -90,7 +90,8 @@ Configuration
 Management Command
 ------------------
 
-Download latest version of browscap.csv by executing the builtin management command.
+Download latest version of the browscap data by executing the builtin management
+command.
 
 ::
 
