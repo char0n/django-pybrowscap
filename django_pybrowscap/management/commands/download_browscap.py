@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 f = open(file_path, 'w')
             except IOError, err:
                 log.exception('Could not open file for writing:')
-                sys.exit()
+                sys.exit(1)
             else:
                 # Reads 512KB at a time into memory
                 for chunk in response.iter_content(chunk_size = 512 * 1024):
@@ -71,8 +71,8 @@ class Command(BaseCommand):
                 status = response.raise_for_status()
             except:
                 log.exception('Download not successful:')
-                sys.exit()
+                sys.exit(1)
         except (ConnectionError,  HTTPError, Timeout, TooManyRedirects), err:
             log.exception('Could not download file:')
-            sys.exit()
+            sys.exit(1)
         return response
