@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 
 from django_pybrowscap import settings
+from django_pybrowscap.utils import attrs
 from pybrowscap.loader.csv import load_file, URL
 from pybrowscap.loader import Downloader
 
@@ -49,3 +50,9 @@ class PybrowscapMiddleware(object):
             finally:
                 if not hasattr(request, 'browser'):
                     request.browser = None
+                else:
+                    request.browser.data = {}
+                    for attr in attrs:
+                        value = request.browser.__getattribute__(attr)()
+                        log.debug('Attr %s = %s' % (attr, value))
+                        request.browser.data[attr] = value

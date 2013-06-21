@@ -15,7 +15,7 @@ be printed to stdout if not given or set in settings.PYBROWSCAP_FILE_PATH."""
 
 
 class Command(BaseCommand):
-    help = "Download browscap.csv"
+    help = "Download browscap file"
     option_list = BaseCommand.option_list + (
         make_option('-u', '--url',
             action='store',
@@ -29,7 +29,7 @@ class Command(BaseCommand):
             dest='file_path',
             default=None,
             help=path_help),
-        )
+    )
 
     def handle(self, *args, **options):
         self.proxies = settings.PYBROWSCAP_PROXIES
