@@ -10,6 +10,7 @@ Requirements
 
 - python 2.7+
 - django
+- python-requests (http://docs.python-requests.org/en/latest/)
 - pybrowscap
 - browscap csv file (http://browsers.garykeith.com/downloads.asp)
 
@@ -18,7 +19,6 @@ Installation
 ------------
 
 Install via pipy or copy this module into your project or into your PYTHON_PATH.
-Download latest version of browscap.csv file from http://browsers.garykeith.com/downloads.asp.
 
 
 **Put django_pybrowscap into INSTALLED_APPS in your projects settings.py file**
@@ -67,19 +67,37 @@ Configuration
  # Path where browscap file is located on filesystem
  PYBROWSCAP_FILE_PATH = MEDIA_ROOT+os.sep+'browscap.csv' # Default is '' (empty string)
 
- # Whether to perform automatic updates of browscap file
- PYBROWSCAP_UPDATE = False # Default is False
+ # Proxy to use
+ # See: http://docs.python-requests.org/en/latest/user/advanced/#proxies
+ PYBROWSCAP_PROXIES = {
+   "http": "http://user:pass@10.10.1.10:3128",
+   "https": "http://10.10.1.10:1080",
+ } # Defaults to None.
 
- # Interval of automatic browscap file updates
- PYBROWSCAP_UPDATE_INTERVAL = 604800 # Default one week in seconds
+ # Timeout for HTTP requets
+ # See: http://docs.python-requests.org/en/latest/user/quickstart/#timeouts
+ PYBROWSCAP_HTTP_TIMEOUT = 30
 
- # Tuple or regex expressions of path that are to be ignored by middleware
+ # Tuple of regular expressions of paths that are to be ignored by the middleware
  PYBROWSCAP_IGNORE_PATHS = (
      re.compile(r'^/sitemap.xml$'),
      re.compile(r'^/robots.txt$'),
      re.compile(r'^/favicon.ico$'),
      re.compile(r'^/media/')
- ) # Default empty tupple
+ ) # Defaults to an empty tupple.
+
+
+Management Command
+------------------
+
+Download latest version of the browscap data by executing the builtin management
+command.
+
+::
+
+ python manage.py download_browscap \
+ --url http://tempdownloads.browserscap.com/stream.asp?Full_BrowscapINI \
+ --file-path /path/to/downloaded/browscap_file
 
 
 Example
