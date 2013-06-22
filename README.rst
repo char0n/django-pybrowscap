@@ -10,7 +10,7 @@ Requirements
 
 - python 2.7+
 - django
-- python-requests (http://docs.python-requests.org/en/latest/)
+- requests (http://docs.python-requests.org/en/latest/)
 - pybrowscap
 - browscap csv file (http://browsers.garykeith.com/downloads.asp)
 
