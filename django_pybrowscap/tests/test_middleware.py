@@ -1,24 +1,23 @@
 import re
 from StringIO import StringIO
-from django.core.handlers.wsgi import WSGIRequest
 
+from django.core.handlers.wsgi import WSGIRequest
 from django.test import TestCase
 from django.test.utils import setup_test_environment
 setup_test_environment()
 from django.core.urlresolvers import reverse
 
 import mock
-
 from pybrowscap import Browser
 
 from ..tests import BROWSCAP_FILE, USER_AGENT
 from ..middleware import PybrowscapMiddleware
 
 
-__all__ = ('TestInitialization', 'TestIgnorePaths', 'TestRequestErrors')
+__all__ = ('InitializationTest', 'IgnorePathsTest', 'RequestErrorsTest')
 
 
-class TestInitialization(TestCase):
+class InitializationTest(TestCase):
 
     @mock.patch('django_pybrowscap.middleware.settings')
     def test_initialization_default(self, settings):
@@ -41,7 +40,7 @@ class TestInitialization(TestCase):
         self.assertIsNone(response.context['browser'])
 
 
-class TestIgnorePaths(TestCase):
+class IgnorePathsTest(TestCase):
 
     @mock.patch('django_pybrowscap.middleware.settings')
     def test_ignore_nothing(self, settings):
@@ -60,7 +59,7 @@ class TestIgnorePaths(TestCase):
         self.assertIsNone(response.context['browser'])
 
 
-class TestRequestErrors(TestCase):
+class RequestErrorsTest(TestCase):
 
     def setUp(self):
         self.request = WSGIRequest(environ={
