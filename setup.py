@@ -22,7 +22,10 @@ setup(
         'django_pybrowscap.tests': ['data/*.csv']
     },
     test_suite='runtests.runtests',
-    install_requires=['django', 'pybrowscap', 'requests', 'mock'],
+    install_requires = ['django', 'pybrowscap', 'requests'],
+    extras_require = {
+        'tests': ['mock']
+    },
     platforms='any',
     classifiers=[
         'Development Status :: 4 - Beta',
