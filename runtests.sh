@@ -28,12 +28,30 @@ INSTALLED_APPS = (
 
 SECRET_KEY = 'secret_key'
 ROOT_URLCONF = 'django_pybrowscap.tests'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler'
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['null'],
+            'level': 'DEBUG'
+        }
+    }
+}
+
 EOF
 
 export PYTHONPATH=.
 export DJANGO_SETTINGS_MODULE=settings
 
-django-admin.py test django_pybrowscap $@
+django-admin.py test -v 2 django_pybrowscap $@
 
 rm -f $SETTINGS*
 rm -f test.db

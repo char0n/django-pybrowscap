@@ -15,4 +15,4 @@ PYBROWSCAP_PROXIES = getattr(settings, 'PYBROWSCAP_PROXIES', None)
 PYBROWSCAP_HTTP_TIMEOUT = getattr(settings, 'PYBROWSCAP_HTTP_TIMEOUT', 30)
 
 # Tuple or regex expressions of path that are to be ignored by middleware
-PYBROWSCAP_IGNORE_PATHS = getattr(settings, 'PYBROWSCAP_IGNORE_PATHS', ())
+PYBROWSCAP_IGNORE_PATHS = getattr(settings, 'PYBROWSCAP_IGNORE_PATHS', None)

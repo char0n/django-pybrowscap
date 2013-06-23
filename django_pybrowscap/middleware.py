@@ -5,6 +5,9 @@ from pybrowscap.loader.csv import load_file
 from . import settings
 
 
+__all__ = ('PybrowscapMiddleware',)
+
+
 log = logging.getLogger(__name__)
 
 
@@ -33,6 +36,8 @@ class PybrowscapMiddleware(object):
                 for regex in settings.PYBROWSCAP_IGNORE_PATHS:
                     if regex.search(request.path_info):
                         return
+            except TypeError:
+                pass  # Ignore nothing.
             except AttributeError:
                 log.warn('Invalid request, no path info present')
                 return
