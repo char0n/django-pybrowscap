@@ -1,11 +1,12 @@
-import urllib2
 import logging
-from datetime import datetime
+from datetime import timedelta, datetime
 
-from django_pybrowscap import settings
-from django_pybrowscap.utils import attrs
-from pybrowscap.loader.csv import load_file, URL
-from pybrowscap.loader import Downloader
+from pybrowscap.loader.csv import load_file
+
+from . import settings
+
+
+__all__ = ('PybrowscapMiddleware',)
 
 
 log = logging.getLogger(__name__)
@@ -24,18 +25,25 @@ class PybrowscapMiddleware(object):
             try:
                 log.info('Initializing pybrowscap')
                 self.browscap = load_file(settings.PYBROWSCAP_FILE_PATH)
+                self.last_load = datetime.now()
+                log.info('Pybrowscap initialized')
             except IOError:
                 log.exception('Error while initializing pybrowscap')
-                self.browscap = None
-            else:
-                log.info('Pybrowscap initialized')
 
     def process_request(self, request):
         if settings.PYBROWSCAP_INITIALIZE:
+            # Reload mechanism.
+            if (settings.PYBROWSCAP_RELOAD and self.browscap is not None and
+                getattr(self, 'last_load', None) is not None and
+                    (datetime.now() - self.last_load).total_seconds() > settings.PYBROWSCAP_RELOAD_INTERVAL):
+                self.browscap.reload()
+                self.browscap.last_load = self.browscap.reloaded_at
             try:
                 for regex in settings.PYBROWSCAP_IGNORE_PATHS:
                     if regex.search(request.path_info):
                         return
+            except TypeError:
+                pass  # Ignore nothing.
             except AttributeError:
                 log.warn('Invalid request, no path info present')
                 return
@@ -50,9 +58,3 @@ class PybrowscapMiddleware(object):
             finally:
                 if not hasattr(request, 'browser'):
                     request.browser = None
-                else:
-                    request.browser.data = {}
-                    for attr in attrs:
-                        value = request.browser.__getattribute__(attr)()
-                        log.debug('Attr %s = %s' % (attr, value))
-                        request.browser.data[attr] = value

@@ -1,130 +1,127 @@
-import os
 import re
-import time
-import unittest
-from datetime import datetime
+from StringIO import StringIO
 
+from django.core.handlers.wsgi import WSGIRequest
+from django.test import TestCase
+from django.test.utils import setup_test_environment
+setup_test_environment()
+from django.core.urlresolvers import reverse
+
+import mock
 from pybrowscap import Browser
-from django_pybrowscap import middleware
+
+from ..tests import BROWSCAP_FILE, USER_AGENT
+from ..middleware import PybrowscapMiddleware
+from .. import settings as app_settings
 
 
-class RequestMock(object):
-
-    def __init__(self):
-        self.path_info = '/'
-        self.META = {'HTTP_USER_AGENT': 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.18) Gecko/20110628 Ubuntu/10.10 (maverick) Firefox/3.6.18'}
+__all__ = ('InitializationTest', 'BrowscapFileReloadTest', 'IgnorePathsTest', 'RequestErrorsTest')
 
 
-class BaseTest(unittest.TestCase):
+def make_request():
+    return WSGIRequest(environ={
+        'wsgi.input': StringIO(),
+        'REQUEST_METHOD': 'POST',
+        'SERVER_NAME': 'testserver',
+        'SERVER_PORT': '80',
+        'CONTENT_TYPE': 'text/html',
+        'ACCEPT': 'text/html',
+        'USER_AGENT': USER_AGENT
+    })
+
+
+class InitializationTest(TestCase):
 
     def setUp(self):
-
-        middleware.settings.PYBROWSCAP_FILE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'browscap_22_06_2011.csv')
-        self.request = RequestMock()
-        self.DEFAULT_PYBROWSCAP_INITIALIZE = middleware.settings.PYBROWSCAP_INITIALIZE
-        self.DEFAULT_PYBROWSCAP_FILE_PATH = middleware.settings.PYBROWSCAP_FILE_PATH
-        self.DEFAULT_PYBROWSCAP_UPDATE = middleware.settings.PYBROWSCAP_UPDATE
-        self.DEFAULT_PYBROWSCAP_UPDATE_INTERVAL = middleware.settings.PYBROWSCAP_UPDATE_INTERVAL
-        self.DEFAULT_PYBROWSCAP_IGNORE_PATHS = middleware.settings.PYBROWSCAP_IGNORE_PATHS
+        self.settings_patcher = mock.patch('django_pybrowscap.middleware.settings')
+        self.mock_settings = self.settings_patcher.start()
+        self.mock_settings.PYBROWSCAP_FILE_PATH = BROWSCAP_FILE
 
     def tearDown(self):
-        middleware.settings.PYBROWSCAP_INITIALIZE = self.DEFAULT_PYBROWSCAP_INITIALIZE
-        middleware.settings.PYBROWSCAP_FILE_PATH = self.DEFAULT_PYBROWSCAP_FILE_PATH
-        middleware.settings.PYBROWSCAP_UPDATE = self.DEFAULT_PYBROWSCAP_UPDATE
-        middleware.settings.PYBROWSCAP_UPDATE_INTERVAL = self.DEFAULT_PYBROWSCAP_UPDATE_INTERVAL
-        middleware.settings.PYBROWSCAP_IGNORE_PATHS = self.DEFAULT_PYBROWSCAP_IGNORE_PATHS
+        self.settings_patcher.stop()
 
-
-class TestInitialize(BaseTest):
+    def test_initialization_default(self):
+        response = self.client.get(reverse('view'), **{'HTTP_USER_AGENT': USER_AGENT})
+        self.assertIsInstance(response.context['browser'], Browser)
 
     def test_initialization_on(self):
-        middleware.settings.PYBROWSCAP_INITIALIZE = True
-        instance = middleware.PybrowscapMiddleware()
-        self.assertTrue(hasattr(instance, 'browscap'))
-        instance.process_request(self.request)
-        self.assertIsNotNone(self.request.browser)
-        self.assertIsInstance(self.request.browser, Browser)
-        self.assertFalse(self.request.browser.is_crawler())
+        self.mock_settings.PYBROWSCAP_INITIALIZE = True
+        response = self.client.get(reverse('view'), **{'HTTP_USER_AGENT': USER_AGENT})
+        self.assertIsInstance(response.context['browser'], Browser)
 
     def test_initialization_off(self):
-        middleware.settings.PYBROWSCAP_INITIALIZE = False
-        instance = middleware.PybrowscapMiddleware()
-        self.assertFalse(hasattr(instance, 'browscap'))
-        self.assertFalse(hasattr(self.request, 'browser'))
-
-    def test_initialization_no_file(self):
-        middleware.settings.PYBROWSCAP_FILE_PATH = ''
-        instance = middleware.PybrowscapMiddleware()
-        self.assertIsNone(instance.browscap)
+        self.mock_settings.PYBROWSCAP_INITIALIZE = False
+        response = self.client.get(reverse('view'), **{'HTTP_USER_AGENT': USER_AGENT})
+        self.assertIsNone(response.context['browser'])
 
 
-class TestUpdate(BaseTest):
+class BrowscapFileReloadTest(TestCase):
 
-    def test_update(self):
-        middleware.settings.PYBROWSCAP_UPDATE = True
-        middleware.settings.PYBROWSCAP_UPDATE_INTERVAL = 0.1
-        instance = middleware.PybrowscapMiddleware()
-        self.assertGreaterEqual(datetime.now(), instance.browscap.loaded_at)
-        self.assertIsNone(instance.browscap.reloaded_at)
-        time.sleep(0.2)
-        instance.process_request(self.request)
-        self.assertGreaterEqual(datetime.now(), instance.browscap.loaded_at)
-        self.assertGreaterEqual(datetime.now(), instance.browscap.reloaded_at)
+    def setUp(self):
+        self.settings_patcher = mock.patch('django_pybrowscap.middleware.settings')
+        self.mock_settings = self.settings_patcher.start()
+        self.mock_settings.PYBROWSCAP_FILE_PATH = BROWSCAP_FILE
+        self.mock_settings.PYBROWSCAP_PROXIES = app_settings.PYBROWSCAP_PROXIES
+        self.mock_settings.PYBROWSCAP_HTTP_TIMEOUT = app_settings.PYBROWSCAP_HTTP_TIMEOUT
+        self.mock_settings.PYBROWSCAP_RELOAD = True
+        self.mock_settings.PYBROWSCAP_RELOAD_INTERVAL = app_settings.PYBROWSCAP_HTTP_TIMEOUT
 
-    def test_update_long_interval(self):
-        middleware.settings.PYBROWSCAP_UPDATE = True
-        middleware.settings.PYBROWSCAP_UPDATE_INTERVAL = 100
-        instance = middleware.PybrowscapMiddleware()
-        self.assertGreaterEqual(datetime.now(), instance.browscap.loaded_at)
-        self.assertIsNone(instance.browscap.reloaded_at)
-        time.sleep(0.1)
-        instance.process_request(self.request)
-        self.assertGreaterEqual(datetime.now(), instance.browscap.loaded_at)
-        self.assertIsNone(instance.browscap.reloaded_at)
+    def tearDown(self):
+        self.settings_patcher.stop()
 
-    def test_no_update(self):
-        middleware.settings.PYBROWSCAP_UPDATE = False
-        middleware.settings.PYBROWSCAP_UPDATE_INTERVAL = 0.1
-        instance = middleware.PybrowscapMiddleware()
-        self.assertGreaterEqual(datetime.now(), instance.browscap.loaded_at)
-        self.assertIsNone(instance.browscap.reloaded_at)
-        time.sleep(0.1)
-        instance.process_request(self.request)
-        self.assertGreaterEqual(datetime.now(), instance.browscap.loaded_at)
-        self.assertIsNone(instance.browscap.reloaded_at)
+    @mock.patch('pybrowscap.loader.csv.Browscap')
+    def test_reload(self, browscap):
+        middleware = PybrowscapMiddleware()
+        middleware.process_request(make_request())
+        middleware.browscap.reload.assert_called_zero()
+        self.mock_settings.PYBROWSCAP_RELOAD_INTERVAL = 0
+        middleware.process_request(make_request())
+        middleware.browscap.reload.assert_called_once()
 
 
-class TestIgnorePaths(BaseTest):
+class IgnorePathsTest(TestCase):
+
+    def setUp(self):
+        self.settings_patcher = mock.patch('django_pybrowscap.middleware.settings')
+        self.mock_settings = self.settings_patcher.start()
+        self.mock_settings.PYBROWSCAP_FILE_PATH = BROWSCAP_FILE
+
+    def tearDown(self):
+        self.settings_patcher.stop()
 
     def test_ignore_nothing(self):
-        instance = middleware.PybrowscapMiddleware()
-        instance.process_request(self.request)
-        self.assertIsNotNone(self.request.browser)
-        self.assertIsInstance(self.request.browser, Browser)
-        self.assertFalse(self.request.browser.is_crawler())
+        self.mock_settings.PYBROWSCAP_IGNORE_PATHS = None
+        response = self.client.get(reverse('view'), **{'HTTP_USER_AGENT': USER_AGENT})
+        self.assertIsInstance(response.context['browser'], Browser)
+        response = self.client.get(reverse('robots'), **{'HTTP_USER_AGENT': USER_AGENT})
+        self.assertIsInstance(response.context['browser'], Browser)
 
-    def test_ignore_media(self):
-        middleware.settings.PYBROWSCAP_IGNORE_PATHS = (
-            re.compile(r'^/media/'),
-        )
-        self.request.path_info = '/media/image.jpg'
-        instance = middleware.PybrowscapMiddleware()
-        instance.process_request(self.request)
-        self.assertFalse(hasattr(self.request, 'browser'))
+    def test_ignore_robots(self):
+        self.mock_settings.PYBROWSCAP_IGNORE_PATHS = (re.compile(r'^/robots.txt$'),)
+        response = self.client.get(reverse('robots'), **{'HTTP_USER_AGENT': USER_AGENT})
+        self.assertIsNone(response.context['browser'])
 
 
-class TestRequestErrors(BaseTest):
+class RequestErrorsTest(TestCase):
+
+    def setUp(self):
+        self.request = make_request()
+
+        self.settings_patcher = mock.patch('django_pybrowscap.middleware.settings')
+        self.mock_settings = self.settings_patcher.start()
+        self.mock_settings.PYBROWSCAP_FILE_PATH = BROWSCAP_FILE
+
+    def tearDown(self):
+        self.settings_patcher.stop()
 
     def test_no_meta(self):
-        del self.request.META
-        instance = middleware.PybrowscapMiddleware()
-        instance.process_request(self.request)
-        self.assertTrue(hasattr(self.request, 'browser'))
+        middleware = PybrowscapMiddleware()
+        delattr(self.request, 'META')
+        middleware.process_request(self.request)
         self.assertIsNone(self.request.browser)
 
     def test_no_meta_user_agent(self):
-        self.request.META = {}
-        instance = middleware.PybrowscapMiddleware()
-        instance.process_request(self.request)
-        self.assertTrue(hasattr(self.request, 'browser'))
+        del self.request.META['USER_AGENT']
+        middleware = PybrowscapMiddleware()
+        middleware.process_request(self.request)
         self.assertIsNone(self.request.browser)
