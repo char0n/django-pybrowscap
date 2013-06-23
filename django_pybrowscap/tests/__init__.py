@@ -7,8 +7,8 @@ from django.template import Template
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.18) Gecko/20110628 Ubuntu/10.10 (maverick) Firefox/3.6.18'
-BROWSCAP_FILE = os.path.join(os.path.dirname(__file__), 'data', 'browscap_22_06_2011.csv')
-DOWNLOAD_URL = 'http://raw.github.com/CodeScaleInc/django-pybrowscap/develop/django_pybrowscap/tests/data/browscap_22_06_2011.csv'
+BROWSCAP_FILE = os.path.join(os.path.dirname(__file__), 'data', 'browscap_14_05_2012.csv')
+DOWNLOAD_URL = 'http://raw.github.com/CodeScaleInc/django-pybrowscap/develop/django_pybrowscap/tests/data/browscap_14_05_2012.csv'
 
 
 urlpatterns = patterns('django_pybrowscap.tests',

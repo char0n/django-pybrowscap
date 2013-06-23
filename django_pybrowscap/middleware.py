@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta, datetime
 
 from pybrowscap.loader.csv import load_file
 
@@ -24,14 +25,19 @@ class PybrowscapMiddleware(object):
             try:
                 log.info('Initializing pybrowscap')
                 self.browscap = load_file(settings.PYBROWSCAP_FILE_PATH)
+                self.last_load = datetime.now()
+                log.info('Pybrowscap initialized')
             except IOError:
                 log.exception('Error while initializing pybrowscap')
-                self.browscap = None
-            else:
-                log.info('Pybrowscap initialized')
 
     def process_request(self, request):
         if settings.PYBROWSCAP_INITIALIZE:
+            # Reload mechanism.
+            if (settings.PYBROWSCAP_RELOAD and self.browscap is not None and
+                getattr(self, 'last_load', None) is not None and
+                    (datetime.now() - self.last_load).total_seconds() > settings.PYBROWSCAP_RELOAD_INTERVAL):
+                self.browscap.reload()
+                self.browscap.last_load = self.browscap.reloaded_at
             try:
                 for regex in settings.PYBROWSCAP_IGNORE_PATHS:
                     if regex.search(request.path_info):
